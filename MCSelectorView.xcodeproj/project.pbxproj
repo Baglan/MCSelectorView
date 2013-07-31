@@ -20,6 +20,7 @@
 		8623310817A781D000B09137 /* ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8623310617A781D000B09137 /* ViewController.xib */; };
 		8623311117A7820A00B09137 /* MCSelectorView.m in Sources */ = {isa = PBXBuildFile; fileRef = 8623311017A7820A00B09137 /* MCSelectorView.m */; };
 		86297CF617A97AAD00BF4285 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 86297CF517A97AAD00BF4285 /* README.md */; };
+		86297CF817A98A8800BF4285 /* sample.png in Resources */ = {isa = PBXBuildFile; fileRef = 86297CF717A98A8800BF4285 /* sample.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,6 +43,7 @@
 		8623310F17A7820A00B09137 /* MCSelectorView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MCSelectorView.h; path = Classes/MCSelectorView.h; sourceTree = "<group>"; };
 		8623311017A7820A00B09137 /* MCSelectorView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MCSelectorView.m; path = Classes/MCSelectorView.m; sourceTree = "<group>"; };
 		86297CF517A97AAD00BF4285 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
+		86297CF717A98A8800BF4285 /* sample.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = sample.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +63,7 @@
 		862330DF17A781D000B09137 = {
 			isa = PBXGroup;
 			children = (
+				86297CF717A98A8800BF4285 /* sample.png */,
 				86297CF517A97AAD00BF4285 /* README.md */,
 				8623310E17A781D700B09137 /* Classes */,
 				862330F117A781D000B09137 /* MCSelectorView */,
@@ -180,6 +183,7 @@
 				8623310217A781D000B09137 /* Default-568h@2x.png in Resources */,
 				8623310817A781D000B09137 /* ViewController.xib in Resources */,
 				86297CF617A97AAD00BF4285 /* README.md in Resources */,
+				86297CF817A98A8800BF4285 /* sample.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

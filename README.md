@@ -1,6 +1,8 @@
 # MCSelectorView
 
-Horizontal selector where values can be chosen by either scrolling or tapping. Can be thought asa customized version of the UIPickerView.
+Horizontal selector where values can be chosen by either scrolling or tapping. Can be thought asa customized version of the UIPickerView. Here's a screenshot from the sample project:
+
+![](sample.png)
 
 ## Installation
 
