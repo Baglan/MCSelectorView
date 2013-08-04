@@ -13,15 +13,15 @@
 
 @interface MCSelectorView : UIView
 
-@property (nonatomic, assign) NSUInteger index;
-@property (nonatomic, assign) NSUInteger highlightedIndex;
+@property (nonatomic, readonly) NSInteger index;
+@property (nonatomic, readonly) NSInteger highlightedIndex;
 @property (nonatomic, weak) id<MCSelectorViewDataSource> dataSource;
 @property (nonatomic, weak) id<MCSelectorViewDelegate> delegate;
 @property (nonatomic, readonly) BOOL isDragging;
 @property (nonatomic, readonly) BOOL hasStopped;
-@property (nonatomic, retain) NSArray * optionViews;
+@property (nonatomic, readonly) NSArray * optionViews;
 
-- (void)setIndex:(NSUInteger)index animated:(BOOL)animated;
+- (void)scrollToIndex:(NSInteger)index animated:(BOOL)animated;
 
 - (void)reloadData;
 

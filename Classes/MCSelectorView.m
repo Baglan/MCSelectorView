@@ -12,8 +12,6 @@
 
 @interface MCSelectorView () <UIScrollViewDelegate>
 
-@property (nonatomic, assign) NSUInteger page;
-
 @end
 
 @implementation MCSelectorView {
@@ -21,25 +19,35 @@
     NSTimeInterval _timeout;
     NSTimer * _timeoutTimer;
     BOOL _presented;
-    BOOL _laidOut;
+    
+    NSInteger _index;
+    NSInteger _highlightedIndex;
+    
+    NSArray * _optionViews;
 }
+
+#pragma mark - General
 
 - (id)init
 {
     self = [super init];
-    if (self) {
-        _laidOut = NO;
-        
+    if (self) {        
         _scrollView = [[UIScrollView alloc] initWithFrame:CGRectZero];
         _scrollView.hidden = YES;
         [self addSubview:_scrollView];
-        // _scrollView.pagingEnabled = YES;
         _scrollView.delegate = self;
         _scrollView.decelerationRate = UIScrollViewDecelerationRateFast;
         
         [self addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)]];
+        
+        _hasStopped = YES;
     }
     return self;
+}
+
+- (void)didMoveToSuperview
+{
+    [self setNeedsLayout];
 }
 
 - (void)tap:(UITapGestureRecognizer *)recognizer
@@ -67,9 +75,10 @@
 {
     if (self.dataSource) {
         CGRect optionRect = [self.dataSource optionRectForSelectorView:self];
+        
         _scrollView.frame = CGRectMake(0, 0, optionRect.size.width, optionRect.size.height);
         _scrollView.contentSize = CGSizeMake(optionRect.size.width * self.optionViews.count, optionRect.size.height);
-        _scrollView.contentOffset = CGPointMake(optionRect.size.width * _highlightedIndex, 0);
+        
         [self.optionViews enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             UIView * view = obj;
             CGRect frame = CGRectMake(optionRect.size.width * idx, 0, optionRect.size.width, optionRect.size.height);
@@ -77,10 +86,31 @@
         }];
         self.transform = CGAffineTransformIdentity;
         self.frame = CGRectMake(optionRect.origin.x, optionRect.origin.y, optionRect.size.width * self.optionViews.count, optionRect.size.height);
-        self.transform = CGAffineTransformMakeTranslation(-_scrollView.contentOffset.x, 0);
     }
-    [self updateOptions];
-    _laidOut = YES;
+    [self onContentOffsetChange];
+}
+
+#pragma mark - Index
+
+- (NSInteger)index
+{
+    return [self normalizeIndex:_index];
+}
+
+- (NSInteger)normalizeIndex:(NSInteger)index
+{
+    NSInteger total = _optionViews ? _optionViews.count : 0;
+    index = index >= total ? (total - 1) : index;
+    index = index < 0 ? 0 : index;
+    
+    return index;
+}
+
+#pragma mark - Highlighted index
+
+- (NSInteger)highlightedIndex
+{
+    return [self normalizeIndex:_highlightedIndex];
 }
 
 #pragma mark - Present, dismiss and reload
@@ -91,7 +121,7 @@
         UIView * view = obj;
         [view removeFromSuperview];
     }];
-    self.optionViews = nil;
+    _optionViews = nil;
     [self setNeedsLayout];
 }
 
@@ -157,21 +187,6 @@
     return _optionViews;
 }
 
-- (void)setIndex:(NSUInteger)index
-{
-    [self setIndex:index animated:NO];
-}
-
-- (void)setIndex:(NSUInteger)index animated:(BOOL)animated
-{
-    if (!_laidOut) {
-        _index = index;
-        _highlightedIndex = index;
-    }
-    
-    [_scrollView setContentOffset:CGPointMake(_scrollView.frame.size.width * index, 0) animated:animated];
-}
-
 #pragma mark - Internals
 
 - (void)resetTimeout
@@ -181,11 +196,6 @@
     if (_timeout > 0) {
         _timeoutTimer = [NSTimer scheduledTimerWithTimeInterval:3.0 target:self selector:@selector(dismiss) userInfo:nil repeats:NO];
     }
-}
-
-- (NSUInteger)page
-{
-    return roundf(_scrollView.contentOffset.x / _scrollView.frame.size.width);
 }
 
 - (void)updateOptions
@@ -204,44 +214,65 @@
     }];
 }
 
-- (void)updateForHighlightedIndex:(NSUInteger)highlightedIndex
-{
-    _highlightedIndex = highlightedIndex;
-    [self updateOptions];
-    
-    if ([self.delegate respondsToSelector:@selector(selectorView:didHighlightOptionAtIndex:)]) {
-        [self.delegate selectorView:self didHighlightOptionAtIndex:highlightedIndex];
-    }
-}
-
 - (void)updateForSelectedIndex:(NSUInteger)selectedIndex
 {
-    _index = selectedIndex;
+    _index = [self normalizeIndex:selectedIndex];
     if ([self.delegate respondsToSelector:@selector(selectorView:didSelectOptionAtIndex:)]) {
         [self.delegate selectorView:self didSelectOptionAtIndex:selectedIndex];
     }
 }
 
-#pragma mark - UIScrollViewDelegate
+#pragma mark - Scrolling
 
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+- (void)onContentOffsetChange
 {
-    _hasStopped = NO;
+    CGFloat offset = _scrollView.contentOffset.x;
     
-    self.transform = CGAffineTransformMakeTranslation(-scrollView.contentOffset.x, 0);
+    self.transform = CGAffineTransformMakeTranslation(-offset, 0);
+
+    NSInteger calculatedIndex = (NSInteger)roundf(offset / _scrollView.frame.size.width);
+    calculatedIndex = [self normalizeIndex:calculatedIndex];
     
-    NSUInteger page = self.page;
-    
-    // If page changed and delegate is OK with this change, reflect it
-    if (page != _highlightedIndex && ([self.delegate respondsToSelector:@selector(selectorView:shouldHighlightOptionAtIndex:)] ? [self.delegate selectorView:self shouldHighlightOptionAtIndex:page] : YES)) {
-        [self updateForHighlightedIndex:page];
+    // Check if highlighted index should be updated
+    if (calculatedIndex != _highlightedIndex && ([self.delegate respondsToSelector:@selector(selectorView:shouldHighlightOptionAtIndex:)] ? [self.delegate selectorView:self shouldHighlightOptionAtIndex:calculatedIndex] : YES)) {
+        _highlightedIndex = calculatedIndex;
+        
+        // Inform delegate
+        if ([self.delegate respondsToSelector:@selector(selectorView:didHighlightOptionAtIndex:)]) {
+            [self.delegate selectorView:self didHighlightOptionAtIndex:_highlightedIndex];
+        }
     }
     
-    [self checkIfShouldUpdateIndex];
+    // Check if index should be updated
+    if (calculatedIndex != _index && ([self.delegate respondsToSelector:@selector(selectorView:shouldSelectOptionAtIndex:)] ? [self.delegate selectorView:self shouldSelectOptionAtIndex:calculatedIndex] : YES)) {
+        _index = calculatedIndex;
+        
+        // Inform delegate
+        if ([self.delegate respondsToSelector:@selector(selectorView:didSelectOptionAtIndex:)]) {
+            [self.delegate selectorView:self didSelectOptionAtIndex:_index];
+        }
+    }
+    
+    [self updateOptions];
     
     [self resetTimeout];
 }
 
+- (void)scrollToIndex:(NSInteger)index animated:(BOOL)animated
+{
+    [_scrollView setContentOffset:CGPointMake(_scrollView.frame.size.width * self.index, 0) animated:animated];
+    if (!animated) {
+        [self onContentOffsetChange];
+    }
+}
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
+    _hasStopped = NO;
+    [self onContentOffsetChange];
+}
+
+// Calculate landing position
 - (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset
 {
     CGFloat pageWidth = scrollView.frame.size.width;
@@ -259,14 +290,14 @@
     
     if (!decelerate) {
         _hasStopped = YES;
-        [self checkIfShouldUpdateIndex];
+        [self onContentOffsetChange];
     }
 }
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
 {
     _hasStopped = YES;
-    [self checkIfShouldUpdateIndex];
+    [self onContentOffsetChange];
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
@@ -274,20 +305,10 @@
     _isDragging = YES;
 }
 
-- (void)checkIfShouldUpdateIndex
-{
-    NSUInteger page = self.page;
-    
-    // If index changed and delegate is OK with is, update it
-    if (_index != page && ([self.delegate respondsToSelector:@selector(selectorView:shouldSelectOptionAtIndex:)] ? [self.delegate selectorView:self shouldSelectOptionAtIndex:page] : YES)) {
-        [self updateForSelectedIndex:page];
-    }
-}
-
 - (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView
 {
     _hasStopped = YES;
-    [self checkIfShouldUpdateIndex];
+    [self onContentOffsetChange];
 }
 
 #pragma mark - Pan Gesture Recognizer

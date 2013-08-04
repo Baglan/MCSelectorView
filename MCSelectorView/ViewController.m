@@ -28,7 +28,7 @@
     [self.view addSubview:_selectorView];
     [_selectorView present];
     
-    [_selectorView setIndex:2 animated:NO];
+    [_selectorView scrollToIndex:2 animated:NO];
     
     _sampleLabel.hidden = YES;
 }
