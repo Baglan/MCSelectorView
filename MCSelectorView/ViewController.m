@@ -29,7 +29,7 @@
     [_selectorView present];
     
     [_selectorView scrollToIndex:2 animated:NO];
-    
+
     _sampleLabel.hidden = YES;
 }
 

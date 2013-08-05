@@ -56,8 +56,7 @@
     [self.optionViews enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         UIView * view = obj;
         if (CGRectContainsPoint(view.frame, location)) {
-            CGRect optionRect = [self.dataSource optionRectForSelectorView:self];
-            [_scrollView setContentOffset:CGPointMake(optionRect.size.width * idx, 0) animated:YES];
+            [self scrollToIndex:idx animated:YES];
             *stop = YES;
         }
     }];
@@ -104,6 +103,14 @@
     index = index < 0 ? 0 : index;
     
     return index;
+}
+
+#pragma mark - Delegate
+
+- (void)setDelegate:(id<MCSelectorViewDelegate>)delegate
+{
+    _delegate = delegate;
+    [self setNeedsLayout];
 }
 
 #pragma mark - Highlighted index
@@ -260,7 +267,9 @@
 
 - (void)scrollToIndex:(NSInteger)index animated:(BOOL)animated
 {
-    [_scrollView setContentOffset:CGPointMake(_scrollView.frame.size.width * self.index, 0) animated:animated];
+    [self layoutIfNeeded];
+    
+    [_scrollView setContentOffset:CGPointMake(_scrollView.frame.size.width * index, 0) animated:animated];
     if (!animated) {
         [self onContentOffsetChange];
     }
