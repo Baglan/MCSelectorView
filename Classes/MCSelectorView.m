@@ -130,6 +130,7 @@
     }];
     _optionViews = nil;
     [self setNeedsLayout];
+    [self layoutIfNeeded];
 }
 
 - (void)presentWithTimeout:(NSTimeInterval)timeout
