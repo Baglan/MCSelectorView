@@ -145,7 +145,8 @@
     
     self.hidden = NO;
     self.alpha = 0.0;
-    [UIView animateWithDuration:0.2 animations:^{
+    
+    [UIView animateWithDuration:0.2 delay:0 options:(UIViewAnimationOptionBeginFromCurrentState) animations:^{
         self.alpha = 1.0;
     } completion:^(BOOL finished) {
         if ([self.delegate respondsToSelector:@selector(didPresentSelectorView:)]) {
@@ -168,7 +169,7 @@
         [self.delegate willDismissSelectorView:self];
     }
     
-    [UIView animateWithDuration:0.2 animations:^{
+    [UIView animateWithDuration:0.2 delay:0 options:(UIViewAnimationOptionBeginFromCurrentState) animations:^{
         self.alpha = 0.0;
     } completion:^(BOOL finished) {
         self.hidden = YES;
