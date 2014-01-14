@@ -9,7 +9,11 @@
 #import <UIKit/UIKit.h>
 
 @interface ViewController : UIViewController {
-    __weak IBOutlet UILabel *_sampleLabel;
+    __weak IBOutlet UIView *_horizontalContainerView;
+    __weak IBOutlet UILabel *_horizontalSampleLabel;
+    
+    __weak IBOutlet UIView *_verticalContainerView;
+    __weak IBOutlet UILabel *_verticalSampleLabel;
 }
 
 @end

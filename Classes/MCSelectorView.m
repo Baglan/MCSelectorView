@@ -41,6 +41,7 @@
         [self addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tap:)]];
         
         _hasStopped = YES;
+        _layoutType = MCSelectorViewLayoutType_Horizontal;
     }
     return self;
 }
@@ -76,15 +77,15 @@
         CGRect optionRect = [self.dataSource optionRectForSelectorView:self];
         
         _scrollView.frame = CGRectMake(0, 0, optionRect.size.width, optionRect.size.height);
-        _scrollView.contentSize = CGSizeMake(optionRect.size.width * self.optionViews.count, optionRect.size.height);
+        _scrollView.contentSize = self.layoutType == MCSelectorViewLayoutType_Horizontal ? CGSizeMake(optionRect.size.width * self.optionViews.count, optionRect.size.height) : CGSizeMake(optionRect.size.width, optionRect.size.height * self.optionViews.count);
         
         [self.optionViews enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
             UIView * view = obj;
-            CGRect frame = CGRectMake(optionRect.size.width * idx, 0, optionRect.size.width, optionRect.size.height);
+            CGRect frame = self.layoutType == MCSelectorViewLayoutType_Horizontal ? CGRectMake(optionRect.size.width * idx, 0, optionRect.size.width, optionRect.size.height) : CGRectMake(0, optionRect.size.height * idx, optionRect.size.width, optionRect.size.height);
             view.frame = frame;
         }];
         self.transform = CGAffineTransformIdentity;
-        self.frame = CGRectMake(optionRect.origin.x, optionRect.origin.y, optionRect.size.width * self.optionViews.count, optionRect.size.height);
+        self.frame = self.layoutType == MCSelectorViewLayoutType_Horizontal ? CGRectMake(optionRect.origin.x, optionRect.origin.y, optionRect.size.width * self.optionViews.count, optionRect.size.height) : CGRectMake(optionRect.origin.x, optionRect.origin.y, optionRect.size.width, optionRect.size.height * self.optionViews.count);
     }
     [self onContentOffsetChange];
 }
@@ -196,6 +197,13 @@
     return _optionViews;
 }
 
+- (void)setLayoutType:(enum MCSelectorViewLayoutType)layoutType
+{
+    _layoutType = layoutType;
+    [self setNeedsLayout];
+    [self layoutIfNeeded];
+}
+
 #pragma mark - Internals
 
 - (void)resetTimeout
@@ -235,11 +243,11 @@
 
 - (void)onContentOffsetChange
 {
-    CGFloat offset = _scrollView.contentOffset.x;
+    CGPoint offset = _scrollView.contentOffset;
     
-    self.transform = CGAffineTransformMakeTranslation(-offset, 0);
+    self.transform = CGAffineTransformMakeTranslation(-offset.x, -offset.y);
 
-    NSInteger calculatedIndex = (NSInteger)roundf(offset / _scrollView.frame.size.width);
+    NSInteger calculatedIndex = self.layoutType == MCSelectorViewLayoutType_Horizontal ? (NSInteger)roundf(offset.x / _scrollView.frame.size.width) : (NSInteger)roundf(offset.y / _scrollView.frame.size.height);
     calculatedIndex = [self normalizeIndex:calculatedIndex];
     
     // Check if highlighted index should be updated
@@ -271,7 +279,9 @@
 {
     [self layoutIfNeeded];
     
-    [_scrollView setContentOffset:CGPointMake(_scrollView.frame.size.width * index, 0) animated:animated];
+    CGPoint contentOffset = self.layoutType == MCSelectorViewLayoutType_Horizontal ? CGPointMake(_scrollView.frame.size.width * index, 0) : CGPointMake(0, _scrollView.frame.size.height * index);
+    
+    [_scrollView setContentOffset:contentOffset animated:animated];
     if (!animated) {
         [self onContentOffsetChange];
     }
@@ -286,13 +296,25 @@
 // Calculate landing position
 - (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset
 {
-    CGFloat pageWidth = scrollView.frame.size.width;
-    NSInteger pages = ceilf(scrollView.contentSize.width / pageWidth);
-    NSInteger page = roundf(targetContentOffset->x / pageWidth);
-    
-    if (page>=0 && page <pages) {
-        targetContentOffset->x = page * scrollView.frame.size.width;
+    if (self.layoutType == MCSelectorViewLayoutType_Horizontal) {
+        CGFloat pageWidth = scrollView.frame.size.width;
+        NSInteger pages = ceilf(scrollView.contentSize.width / pageWidth);
+        NSInteger page = roundf(targetContentOffset->x / pageWidth);
+        
+        if (page>=0 && page<pages) {
+            targetContentOffset->x = page * scrollView.frame.size.width;
+        }
+    } else {
+        CGFloat pageHeight = scrollView.frame.size.height;
+        NSInteger pages = ceilf(scrollView.contentSize.height / pageHeight);
+        NSInteger page = roundf(targetContentOffset->y / pageHeight);
+        
+        if (page>=0 && page<pages) {
+            targetContentOffset->y = page * scrollView.frame.size.height;
+        }
     }
+    
+    
 }
 
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate

@@ -11,6 +11,11 @@
 @protocol MCSelectorViewDataSource;
 @protocol MCSelectorViewDelegate;
 
+enum MCSelectorViewLayoutType {
+    MCSelectorViewLayoutType_Horizontal,
+    MCSelectorViewLayoutType_Vertical
+};
+
 @interface MCSelectorView : UIView
 
 @property (nonatomic, readonly) NSInteger index;
@@ -20,6 +25,7 @@
 @property (nonatomic, readonly) BOOL isDragging;
 @property (nonatomic, readonly) BOOL hasStopped;
 @property (nonatomic, readonly) NSArray * optionViews;
+@property (nonatomic, assign) enum MCSelectorViewLayoutType layoutType;
 
 - (void)scrollToIndex:(NSInteger)index animated:(BOOL)animated;
 

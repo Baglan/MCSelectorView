@@ -14,27 +14,41 @@
 @end
 
 @implementation ViewController {
-    MCSelectorView * _selectorView;
+    MCSelectorView * _horizontalSelectorView;
+    MCSelectorView * _verticalSelectorView;
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
-    
-    _selectorView = [[MCSelectorView alloc] init];
-    _selectorView.dataSource = self;
-    _selectorView.delegate = self;
-    [self.view addSubview:_selectorView];
-    [_selectorView present];
-    
-    [_selectorView scrollToIndex:2 animated:NO];
 
-    _sampleLabel.hidden = YES;
+    // Horizontal
+    _horizontalSelectorView = [[MCSelectorView alloc] init];
+    _horizontalSelectorView.dataSource = self;
+    _horizontalSelectorView.delegate = self;
+    [_horizontalContainerView addSubview:_horizontalSelectorView];
+    [_horizontalSelectorView present];
+    
+    [_horizontalSelectorView scrollToIndex:2 animated:NO];
+
+    _horizontalSampleLabel.hidden = YES;
+
+    // Vertical
+    _verticalSelectorView = [[MCSelectorView alloc] init];
+    _verticalSelectorView.dataSource = self;
+    _verticalSelectorView.delegate = self;
+    _verticalSelectorView.layoutType = MCSelectorViewLayoutType_Vertical;
+    [_verticalContainerView addSubview:_verticalSelectorView];
+    [_verticalSelectorView present];
+    
+    [_verticalSelectorView scrollToIndex:2 animated:NO];
+    
+    _verticalSampleLabel.hidden = YES;
 }
 
 - (UILabel *)copyLabel {
-    UILabel * label = [NSKeyedUnarchiver unarchiveObjectWithData:[NSKeyedArchiver archivedDataWithRootObject:_sampleLabel]];
+    UILabel * label = [NSKeyedUnarchiver unarchiveObjectWithData:[NSKeyedArchiver archivedDataWithRootObject:_horizontalSampleLabel]];
     label.hidden = NO;
     return label;
 }
@@ -43,7 +57,13 @@
 
 - (void)selectorView:(MCSelectorView *)selectorView didSelectOptionAtIndex:(NSUInteger)index
 {
-    NSLog(@"--- %d", index);
+    if (selectorView == _horizontalSelectorView) {
+        NSLog(@"--- horizontal: %d", index);
+    }
+    
+    if (selectorView == _verticalSelectorView) {
+        NSLog(@"--- vertical: %d", index);
+    }
 }
 
 - (void)selectorView:(MCSelectorView *)selectorView updateOptionView:(UIView *)view atIndex:(NSUInteger)index
@@ -56,7 +76,17 @@
 
 - (CGRect)optionRectForSelectorView:(MCSelectorView *)view
 {
-    return _sampleLabel.frame;
+    CGRect frame = CGRectZero;
+    
+    if (view == _horizontalSelectorView) {
+        frame = _horizontalSampleLabel.frame;
+    }
+    
+    if (view == _verticalSelectorView) {
+        frame = _verticalSampleLabel.frame;
+    }
+    
+    return frame;
 }
 
 - (NSArray *)optionViewsForSelectorView:(MCSelectorView *)view
