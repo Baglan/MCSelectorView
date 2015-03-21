@@ -58,6 +58,10 @@
         UIView * view = obj;
         if (CGRectContainsPoint(view.frame, location)) {
             [self scrollToIndex:idx animated:YES];
+            // Inform delegate
+            if ([self.delegate respondsToSelector:@selector(selectorView:didTapOnOptionAtIndex:)]) {
+                [self.delegate selectorView:self didTapOnOptionAtIndex:idx];
+            }
             *stop = YES;
         }
     }];

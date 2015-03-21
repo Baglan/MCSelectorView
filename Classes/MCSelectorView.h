@@ -57,6 +57,8 @@ enum MCSelectorViewLayoutType {
 - (void)selectorView:(MCSelectorView *)selectorView didHighlightOptionAtIndex:(NSUInteger)index;
 - (void)selectorView:(MCSelectorView *)selectorView didSelectOptionAtIndex:(NSUInteger)index;
 
+- (void)selectorView:(MCSelectorView *)selectorView didTapOnOptionAtIndex:(NSUInteger)index;
+
 - (void)willPresentSelectorView:(MCSelectorView *)selectorView;
 - (void)didPresentSelectorView:(MCSelectorView *)selectorView;
 
