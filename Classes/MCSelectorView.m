@@ -58,6 +58,10 @@
         UIView * view = obj;
         if (CGRectContainsPoint(view.frame, location)) {
             [self scrollToIndex:idx animated:YES];
+            // Inform delegate
+            if ([self.delegate respondsToSelector:@selector(selectorView:didTapOnOptionAtIndex:)]) {
+                [self.delegate selectorView:self didTapOnOptionAtIndex:idx];
+            }
             *stop = YES;
         }
     }];
@@ -76,6 +80,9 @@
     if (self.dataSource) {
         CGRect optionRect = [self.dataSource optionRectForSelectorView:self];
         
+        self.transform = CGAffineTransformIdentity;
+        self.frame = self.layoutType == MCSelectorViewLayoutType_Horizontal ? CGRectMake(optionRect.origin.x, optionRect.origin.y, optionRect.size.width * self.optionViews.count, optionRect.size.height) : CGRectMake(optionRect.origin.x, optionRect.origin.y, optionRect.size.width, optionRect.size.height * self.optionViews.count);
+        
         _scrollView.frame = CGRectMake(0, 0, optionRect.size.width, optionRect.size.height);
         _scrollView.contentSize = self.layoutType == MCSelectorViewLayoutType_Horizontal ? CGSizeMake(optionRect.size.width * self.optionViews.count, optionRect.size.height) : CGSizeMake(optionRect.size.width, optionRect.size.height * self.optionViews.count);
         
@@ -84,10 +91,12 @@
             CGRect frame = self.layoutType == MCSelectorViewLayoutType_Horizontal ? CGRectMake(optionRect.size.width * idx, 0, optionRect.size.width, optionRect.size.height) : CGRectMake(0, optionRect.size.height * idx, optionRect.size.width, optionRect.size.height);
             view.frame = frame;
         }];
-        self.transform = CGAffineTransformIdentity;
-        self.frame = self.layoutType == MCSelectorViewLayoutType_Horizontal ? CGRectMake(optionRect.origin.x, optionRect.origin.y, optionRect.size.width * self.optionViews.count, optionRect.size.height) : CGRectMake(optionRect.origin.x, optionRect.origin.y, optionRect.size.width, optionRect.size.height * self.optionViews.count);
+        
+        
     }
     [self onContentOffsetChange];
+    
+    [super layoutSubviews];
 }
 
 #pragma mark - Index
