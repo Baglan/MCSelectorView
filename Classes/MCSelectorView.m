@@ -283,6 +283,7 @@
     
     [_scrollView setContentOffset:contentOffset animated:animated];
     if (!animated) {
+        _hasStopped = YES;
         [self onContentOffsetChange];
     }
 }
