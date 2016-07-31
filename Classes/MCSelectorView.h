@@ -27,6 +27,8 @@ enum MCSelectorViewLayoutType {
 @property (nonatomic, readonly) NSArray * optionViews;
 @property (nonatomic, assign) enum MCSelectorViewLayoutType layoutType;
 
+@property (nonatomic, readonly) UIScrollView * scrollView;
+
 - (void)scrollToIndex:(NSInteger)index animated:(BOOL)animated;
 
 - (void)reloadData;

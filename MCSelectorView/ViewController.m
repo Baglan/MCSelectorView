@@ -58,11 +58,11 @@
 - (void)selectorView:(MCSelectorView *)selectorView didSelectOptionAtIndex:(NSUInteger)index
 {
     if (selectorView == _horizontalSelectorView) {
-        NSLog(@"--- horizontal: %d", index);
+        NSLog(@"--- horizontal: %lu", (unsigned long)index);
     }
     
     if (selectorView == _verticalSelectorView) {
-        NSLog(@"--- vertical: %d", index);
+        NSLog(@"--- vertical: %lu", (unsigned long)index);
     }
 }
 
